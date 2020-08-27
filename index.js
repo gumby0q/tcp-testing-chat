@@ -4,6 +4,44 @@ var io = require('socket.io')(http);
 var PORT = process.env.PORT || 3100;
 var TCP_PORT = process.env.TCP_PORT || 3101;
 var net = require('net');
+
+var https = require('https');
+
+
+function sendData(data) {
+	const regex1 = /\n/gm;
+	const regex2 = /\r/gm;
+	const regex3 = / /gm;
+
+	const dataForInject = `/parsers/update/V1?value=${data}`
+	const pathForSend = dataForInject.replace(regex1, '').replace(regex2, '').replace(regex3, '')
+
+	// const pathForSend = "/parsers/update/V1?value=" + data
+	console.log('typeof', typeof pathForSend)
+	const json = JSON.stringify(pathForSend);
+	console.log('pathForSend', pathForSend)
+	console.log('json', json)
+
+  const req = https.request(
+    {
+      hostname: "goride-timing-api.herokuapp.com",
+      path: pathForSend,
+      method: "POST",
+    },
+    (res) => {
+      res.on("data", () => {
+        // success
+        console.log('success POST to goride-timing-api');
+      });
+    }
+  );
+
+  req.on("error", (error) => {
+    console.error(error);
+  });
+
+  req.end();
+}
 // var bubSubDecorator = require('./bubSubDecorator');
 
 // class CustomEventSystem {
@@ -11,6 +49,11 @@ var net = require('net');
 
 // const customEventSystem = new CustomEventSystem();
 // bubSubDecorator(customEventSystem)
+// var counter = 0;
+// setInterval(() => {
+// 	counter++
+// 	sendData(counter);
+// }, 50)
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
@@ -38,6 +81,7 @@ var tcpServer = net.createServer(function(socket) {
 		console.log('tcp<-', data);
 		io.emit('chat message', `message from tcp->${data}`);
 		//socket.write(data); // test for client
+		sendData(data);
 	});
 });
 
