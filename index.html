@@ -22,7 +22,6 @@
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
-      var time = new Date().toLocaleString();
       $(function () {
         var socket = io('http://localhost:3100');
         $('form').submit(function(){
@@ -31,6 +30,7 @@
           return false;
         });
         socket.on('chat message', function(msg){
+          var time = new Date().toLocaleString();
           $('#messages').append($('<li>').text(time + ':' + msg));
           window.scrollTo(0, document.body.scrollHeight);
         });
