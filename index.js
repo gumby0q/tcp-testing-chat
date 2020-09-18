@@ -1,11 +1,17 @@
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var PORT = process.env.PORT || 3100;
-var TCP_PORT = process.env.TCP_PORT || 3101;
+const allConfigs = require('./.config.json');
+const configs = allConfigs.production;
+
+const app = require('express')();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const PORT = configs.chatPort || 3100;
+const TCP_PORT = configs.tcpPort || 3101;
+const REDIRECT_ADDRESS = configs.redirectServerAddress || 'localhost';
+
 var net = require('net');
 
-var https = require('https');
+// var https = require('https');
+var sender = require('http');
 
 
 function sendData(data) {
@@ -22,16 +28,16 @@ function sendData(data) {
 	console.log('pathForSend', pathForSend)
 	console.log('json', json)
 
-  const req = https.request(
+  const req = sender.request(
     {
-      hostname: "goride-timing-api.herokuapp.com",
+      hostname: REDIRECT_ADDRESS,
       path: pathForSend,
       method: "POST",
     },
     (res) => {
       res.on("data", () => {
         // success
-        console.log('success POST to goride-timing-api');
+        console.log(`success POST to ${REDIRECT_ADDRESS}`);
       });
     }
   );
@@ -42,18 +48,6 @@ function sendData(data) {
 
   req.end();
 }
-// var bubSubDecorator = require('./bubSubDecorator');
-
-// class CustomEventSystem {
-// }
-
-// const customEventSystem = new CustomEventSystem();
-// bubSubDecorator(customEventSystem)
-// var counter = 0;
-// setInterval(() => {
-// 	counter++
-// 	sendData(counter);
-// }, 50)
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
@@ -87,6 +81,7 @@ var tcpServer = net.createServer(function(socket) {
 
 tcpServer.listen(TCP_PORT, '0.0.0.0');
 console.log('tcp server listening on *:' + TCP_PORT);
+console.log('tcp data redirecting to ' + REDIRECT_ADDRESS);
 
 /*
 And connect with a tcp client from the command line using netcat, the *nix 

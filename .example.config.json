@@ -1,0 +1,7 @@
+{
+  "production": {
+    "chatPort": 3100,
+    "tcpPort": 3101,
+    "redirectServerAddress": "64.225.65.39"
+  }
+}
